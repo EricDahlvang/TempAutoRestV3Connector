@@ -1,1 +1,3 @@
-# TempAutoRestV3Connector
+autorest --use:@autorest/csharp@3.0.0-beta.20210210.4 --input-file=.\botframework-channel.json --csharp --add-credential --v3 --verbose --debug --namespace=Microsoft.Bot.Connector.Client --clear-output-folder:true --output-folder:Generated
+
+autorest --use:@autorest/csharp@3.0.0-beta.20210210.4 --input-file=.\TokenAPI.json --csharp --add-credential --v3 --verbose --debug --namespace=Microsoft.Bot.Connector.Client --clear-output-folder:true --output-folder:Generated
