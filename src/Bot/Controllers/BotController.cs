@@ -22,9 +22,11 @@ namespace NewConnectorBot.Controllers
         [HttpGet]
         public async Task PostAsync()
         {
-            Activity incoming=null;
+            Activity incoming = null;
             try
             {
+                // TODO: validate Request.Headers["Authentication"] bearer token
+                
                 incoming = await JsonSerializer.DeserializeAsync<Activity>(Request.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 await _activityProcessor.ProcessAsync(incoming).ConfigureAwait(false);
             }
@@ -36,12 +38,3 @@ namespace NewConnectorBot.Controllers
         }
     }
 }
-
-/*
- 
-//Azure.Core.TokenRequestContext _tokenRequestContext = new(new[] { "https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token" });
-
-Azure.Core.TokenRequestContext _tokenRequestContext = new(new[] { "https://api.botframework.com/.default" });
-var token = credential.GetToken(_tokenRequestContext);
-
-*/

@@ -513,47 +513,6 @@
         }
       }
     },
-    "/v3/conversations/{conversationId}/members": {
-      "get": {
-        "tags": [
-          "Conversations"
-        ],
-        "summary": "GetConversationMembers",
-        "description": "Enumerate the members of a conversation. \r\n\r\nThis REST API takes a ConversationId and returns an array of ChannelAccount objects representing the members of the conversation.",
-        "operationId": "Conversations_GetConversationMembers",
-        "consumes": [],
-        "produces": [
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "name": "conversationId",
-            "in": "path",
-            "description": "Conversation ID",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "An array of ChannelAccount objects",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ChannelAccount"
-              }
-            }
-          },
-          "default": {
-            "description": "The operation failed and the response is an error object describing the status code and failure.",
-            "schema": {
-              "$ref": "#/definitions/ErrorResponse"
-            }
-          }
-        }
-      }
-    },
     "/v3/conversations/{conversationId}/members/{memberId}": {
       "get": {
         "tags": [
@@ -1137,6 +1096,9 @@
         "semanticAction": {
           "$ref": "#/definitions/SemanticAction",
           "description": "An optional programmatic action accompanying this request"
+        },
+        "additionalProperties": {
+          "type": "object"
         }
       }
     },

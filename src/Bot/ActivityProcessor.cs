@@ -46,7 +46,7 @@ namespace NewConnectorBot
                         return;
                     }
 
-                    var state = GetSignInUrlState(incoming);
+                    var state = UserTokenClient.CreateTokenExchangeState(_appId, _connectionName, incoming);
                     var signInUrl = await CreateUserTokenClient(incoming.ServiceUrl).GetSignInUrlAsync(state).ConfigureAwait(false);
                     var buttons = new List<CardAction>() { new CardAction { Title = "Login", Type = ActionTypes.Signin, Value = signInUrl } };
                     var oauthCard = new OAuthCard() { ConnectionName = _connectionName, Text = "Login to continue", Buttons = buttons };
@@ -109,29 +109,6 @@ namespace NewConnectorBot
             }
         }
 
-        private string GetSignInUrlState(Activity activity)
-        {
-            var tokenExchangeState = new TokenExchangeState
-            {
-                ConnectionName = _connectionName,
-                Conversation = new ConversationReference
-                {
-                    ActivityId = activity.Type != ActivityTypes.ConversationUpdate.ToString() || (!string.Equals(activity.ChannelId, "directline", StringComparison.OrdinalIgnoreCase) && !string.Equals(activity.ChannelId, "webchat", StringComparison.OrdinalIgnoreCase)) ? activity.Id : null,
-                    Bot = activity.Recipient,       // Activity is from the user to the bot
-                    ChannelId = activity.ChannelId,
-                    Conversation = activity.Conversation,
-                    Locale = activity.Locale,
-                    ServiceUrl = activity.ServiceUrl,
-                    User = activity.From,
-                },
-                RelatesTo = activity.RelatesTo,
-                MsAppId = _appId,
-            };
-
-            var bytes = JsonSerializer.SerializeToUtf8Bytes<TokenExchangeState>(tokenExchangeState, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            return Convert.ToBase64String(bytes);
-        }
-
         public ConversationsClient CreateConversationsClient(string serviceUrl)
         {
             //var options = new ClientSecretCredentialOptions { AuthorityHost = new Uri("https://login.microsoftonline.com") };
@@ -145,15 +122,6 @@ namespace NewConnectorBot
             var credential = new ClientSecretCredential(_tenant, _appId, _password, options);
             // "api://" + appId + "/.default"
             return new UserTokenClient(credential, "https://api.botframework.com", "https://api.botframework.com/.default", new UserTokenClientOptions());
-        }
-
-        public class TokenExchangeState
-        {
-            public string ConnectionName { get; set; }
-            public ConversationReference Conversation { get; set; }
-            public ConversationReference RelatesTo { get; set; }
-            public string BotUrl { get; set; }
-            public string MsAppId { get; set; }
         }
     }
 }

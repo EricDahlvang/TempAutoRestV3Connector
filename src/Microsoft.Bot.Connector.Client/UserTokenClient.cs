@@ -7,6 +7,7 @@ using Microsoft.Bot.Connector.Client.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,6 +60,27 @@ namespace Microsoft.Bot.Connector.Client
             }
         }
 
+        public async Task<SignInResource> GetSignInResourceAsync(string appId, string connectionName, Activity activity, string finalRedirect, CancellationToken cancellationToken)
+        {
+            using var scope = _clientDiagnostics.CreateScope($"{nameof(UserTokenClient)}.{nameof(GetSignInResourceAsync)}");
+            scope.Start();
+            try
+            {
+                _ = appId ?? throw new ArgumentNullException(nameof(appId));
+                _ = connectionName ?? throw new ArgumentNullException(nameof(connectionName));
+                _ = activity ?? throw new ArgumentNullException(nameof(activity));
+
+                var state = CreateTokenExchangeState(appId, connectionName, activity);
+                var result = await _signInClient.GetSignInResourceAsync(state, null, null, finalRedirect, cancellationToken).ConfigureAwait(false);
+                return result.Value;
+            }
+            catch (Exception e)
+            {
+                scope.Failed(e);
+                throw;
+            }
+        }
+
         public async Task<TokenResponse> GetUserTokenAsync(string userId, string connectionName, string channelId, string magicCode, CancellationToken cancellationToken)
         {
             using var scope = _clientDiagnostics.CreateScope($"{nameof(UserTokenClient)}.{nameof(GetUserTokenAsync)}");
@@ -76,26 +98,6 @@ namespace Microsoft.Bot.Connector.Client
                 }
 
                 return result;
-            }
-            catch (Exception e)
-            {
-                scope.Failed(e);
-                throw;
-            }
-        }
-
-        public Task<SignInResource> GetSignInResourceAsync(string connectionName, Activity activity, string finalRedirect, CancellationToken cancellationToken)
-        {
-            using var scope = _clientDiagnostics.CreateScope($"{nameof(UserTokenClient)}.{nameof(GetSignInResourceAsync)}");
-            scope.Start();
-            try
-            {
-                _ = connectionName ?? throw new ArgumentNullException(nameof(connectionName));
-                _ = activity ?? throw new ArgumentNullException(nameof(activity));
-
-                throw new NotImplementedException();
-                //var state = CreateTokenExchangeState(_appId, connectionName, activity);
-                //await _signInClient.GetSignInResourceAsync(state, null, null, finalRedirect, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -190,23 +192,40 @@ namespace Microsoft.Bot.Connector.Client
             }
         }
 
-        protected static string CreateTokenExchangeState(string appId, string connectionName, Activity activity)
+        public static string CreateTokenExchangeState(string appId, string connectionName, Activity activity)
         {
-            //_ = appId ?? throw new ArgumentNullException(nameof(appId));
-            //_ = connectionName ?? throw new ArgumentNullException(nameof(connectionName));
-            //_ = activity ?? throw new ArgumentNullException(nameof(activity));
+            _ = appId ?? throw new ArgumentNullException(nameof(appId));
+            _ = connectionName ?? throw new ArgumentNullException(nameof(connectionName));
+            _ = activity ?? throw new ArgumentNullException(nameof(activity));
 
-            //var tokenExchangeState = new TokenExchangeState
-            //{
-            //    ConnectionName = connectionName,
-            //    Conversation = activity.GetConversationReference(),
-            //    RelatesTo = activity.RelatesTo,
-            //    MsAppId = appId,
-            //};
-            //var json = JsonConvert.SerializeObject(tokenExchangeState);
-            //return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+            var tokenExchangeState = new TokenExchangeState
+            {
+                ConnectionName = connectionName,
+                Conversation = new ConversationReference
+                {
+                    ActivityId = activity.Type != ActivityTypes.ConversationUpdate.ToString() || (!string.Equals(activity.ChannelId, "directline", StringComparison.OrdinalIgnoreCase) && !string.Equals(activity.ChannelId, "webchat", StringComparison.OrdinalIgnoreCase)) ? activity.Id : null,
+                    Bot = activity.Recipient,       // Activity is from the user to the bot
+                    ChannelId = activity.ChannelId,
+                    Conversation = activity.Conversation,
+                    Locale = activity.Locale,
+                    ServiceUrl = activity.ServiceUrl,
+                    User = activity.From,
+                },
+                RelatesTo = activity.RelatesTo,
+                MsAppId = appId,
+            };
 
-            return null;
+            var bytes = JsonSerializer.SerializeToUtf8Bytes<TokenExchangeState>(tokenExchangeState, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return Convert.ToBase64String(bytes);
+        }
+
+        private class TokenExchangeState
+        {
+            public string ConnectionName { get; set; }
+            public ConversationReference Conversation { get; set; }
+            public ConversationReference RelatesTo { get; set; }
+            public string BotUrl { get; set; }
+            public string MsAppId { get; set; }
         }
     }
 }
