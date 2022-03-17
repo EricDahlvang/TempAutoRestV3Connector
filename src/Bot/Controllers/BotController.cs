@@ -33,6 +33,7 @@ namespace NewConnectorBot.Controllers
                 var authHeader = Request.Headers["Authorization"];
                 var channelProvider = new DefaultChannelProvider();
                 var credentialProvider = new DefaultCredentialProvider(_appId, _password);
+                var claims = await JwtTokenValidation.AuthenticateRequestAsync(incoming, authHeader, credentialProvider, channelProvider).ConfigureAwait(false);
 
                 incoming = await JsonSerializer.DeserializeAsync<Activity>(Request.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 await _activityProcessor.ProcessAsync(incoming).ConfigureAwait(false);
