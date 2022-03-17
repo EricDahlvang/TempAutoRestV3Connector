@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Bot.Connector.Client.Authentication;
 using Microsoft.Bot.Connector.Client.Models;
 using System.Text.Json;
 
@@ -12,9 +13,13 @@ namespace NewConnectorBot.Controllers
     public class BotController : ControllerBase
     {
         private readonly ActivityProcessor _activityProcessor;
+        private readonly string _password;
+        private readonly string _appId;
 
         public BotController(IConfiguration configuration)
         {
+            _appId = configuration["MicrosoftAppId"];
+            _password = configuration["MicrosoftAppPassword"];
             _activityProcessor = new ActivityProcessor(configuration);
         }
 
@@ -25,8 +30,10 @@ namespace NewConnectorBot.Controllers
             Activity incoming = null;
             try
             {
-                // TODO: validate Request.Headers["Authentication"] bearer token
-                
+                var authHeader = Request.Headers["Authorization"];
+                var channelProvider = new DefaultChannelProvider();
+                var credentialProvider = new DefaultCredentialProvider(_appId, _password);
+
                 incoming = await JsonSerializer.DeserializeAsync<Activity>(Request.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 await _activityProcessor.ProcessAsync(incoming).ConfigureAwait(false);
             }

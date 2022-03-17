@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>annotations</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+    <IncludeGeneratorSharedCode>true</IncludeGeneratorSharedCode>
+    <RestoreAdditionalProjectSources>https://azuresdkartifacts.blob.core.windows.net/azure-sdk-tools/index.json</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.AutoRest.CSharp" Version="3.0.0-beta.20210210.4" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.6.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.16.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Bot.Connector.Client\Microsoft.Bot.Connector.Client.csproj" />
+  </ItemGroup>
+
+</Project>
