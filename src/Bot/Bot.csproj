@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Bot.Connector.Client.Authentication\Microsoft.Bot.Connector.Client.Authentication.csproj" />
     <ProjectReference Include="..\Microsoft.Bot.Connector.Client\Microsoft.Bot.Connector.Client.csproj" />
   </ItemGroup>
 
